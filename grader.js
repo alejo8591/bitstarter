@@ -31,7 +31,7 @@ var fs = require('fs'),
 
 
 var restlerURL = function(htmlfile){
-	rest.get(htmlfile).on('complete', function(result) {
+	restler.get(htmlfile).on('complete', function(result) {
 		if (result instanceof Error) {
 			sys.puts('Error: ' + result.message);
 			this.retry(5000); // try again after 5 sec
@@ -77,9 +77,9 @@ var clone = function(fn){
 
 if(require.main == module){
 	program.option('-c, --checks <check_file>', 'Path to check.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
-	.option('-u, --url <html_file>', 'Path to index.html', clone(restlerURL), HTMLFILE_DEFAULT)
+	.option('-u, --url <html_url>', 'Path to index.html', clone(restlerURL))
 	.parse(process.argv);
-	var checkJson = checkHtmlFile(program.file, program.checks);
+	var checkJson = checkHtmlFile(program.url, program.checks);
 	var outJson = JSON.stringify(checkJson, null, 4);
 	console.log(outJson);
 
