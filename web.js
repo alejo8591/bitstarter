@@ -4,11 +4,7 @@ var express = require('express'),
 var app = express.createServer(express.logger());
 
 app.get('/', function(request, response) {
-  	fs.readFile('./index.html', function(err, html){
-		if (err){
-			throw err;
-		}
-	});
+  	fs.readFile('./index.html');
 });
 
 var port = process.env.PORT || 5000;
