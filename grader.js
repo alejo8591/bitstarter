@@ -30,16 +30,6 @@ var fs = require('fs'),
     CHECKSFILE_DEFAULT = "checks.json";
 
 
-var restlerURL = function(htmlfile){
-	restler.get(htmlfile).on('complete', function(result) {
-		if (result instanceof Error) {
-			sys.puts('Error: ' + result.message);
-			this.retry(5000); // try again after 5 sec
-		} else {
-			sys.puts(result);
-		}	
-	});
-};
 
 var assertFileExists = function(infile){
 	var instr = infile.toString();
@@ -51,7 +41,7 @@ var assertFileExists = function(infile){
 };
 
 var cheerioHtmlFile = function(htmlfile){
-	return cheerio.load(restlerURL(htmlfile));
+	return cheerio.load(htmlfile);
 };
 
 var loadChecks = function(checksfile){
@@ -66,7 +56,7 @@ var checkHtmlFile = function(htmlfile, checksfile){
 		var present = $(checks[i]).length > 0;
 		out[checks[i]] = present;
 	}
-	return out;
+	return outJson(out);
 };
 
 var clone = function(fn){
@@ -77,12 +67,21 @@ var clone = function(fn){
 
 if(require.main == module){
 	program.option('-c, --checks <check_file>', 'Path to check.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
-	.option('-u, --url <html_url>', 'Path to index.html', clone(restlerURL))
+	.option('-u, --url <html_url>', 'Path to index.html')
 	.parse(process.argv);
-	var checkJson = checkHtmlFile(program.url, program.checks);
-	var outJson = JSON.stringify(checkJson, null, 4);
-	console.log(outJson);
-
+  if(program.url){
+    restler.get(program.url).on('complete', function(result) {
+      if (result instanceof Error) {
+        sys.puts('Error: ' + result.message);
+        this.retry(5000); // try again after 5 sec
+      } else {
+        var checkJson = checkHtmlFile(result, program.checks);
+      } 
+    });
+  }
+	var outJson = function(checkJson){
+    console.log(JSON.stringify(checkJson, null, 4));
+  }
 } else {
 	exports.checkHtmlFile = checkHtmlFile;
 }
